@@ -1,0 +1,119 @@
+import json
+import os
+
+# Structure: List of dictionaries for transactions
+transactions = []
+
+# File for saving data
+DATA_FILE = "finance_data.json"
+
+# Load existing data
+def load_data():
+    global transactions
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as file:
+            transactions = json.load(file)
+    else:
+        transactions = []
+
+# Save data
+def save_data():
+    with open(DATA_FILE, "w") as file:
+        json.dump(transactions, file, indent=4)
+
+# Add transaction
+def add_transaction():
+    t_type = input("Enter type (Income/Expense): ").capitalize()
+    amount = float(input("Enter amount: "))
+    category = input("Enter category (e.g., Food, Salary, Rent): ")
+    date = input("Enter date (YYYY-MM-DD): ")
+
+    transactions.append({
+        "type": t_type,
+        "amount": amount,
+        "category": category,
+        "date": date
+    })
+    print("✅ Transaction added successfully!")
+    save_data()
+
+# View all transactions
+def view_transactions():
+    if not transactions:
+        print("No transactions found.")
+        return
+    print("\n--- All Transactions ---")
+    for i, t in enumerate(transactions, start=1):
+        print(f"{i}. {t['date']} | {t['type']} | ${t['amount']} | {t['category']}")
+
+# Filter expenses over $100
+def filter_expenses_over_100():
+    print("\n--- Expenses over $100 ---")
+    for t in transactions:
+        if t["type"] == "Expense" and t["amount"] > 100:
+            print(f"{t['date']} | ${t['amount']} | {t['category']}")
+
+# Search by category
+def search_by_category():
+    cat = input("Enter category to search: ")
+    print(f"\n--- Transactions in {cat} ---")
+    for t in transactions:
+        if t["category"].lower() == cat.lower():
+            print(f"{t['date']} | {t['type']} | ${t['amount']}")
+
+# Sort by amount
+def sort_by_amount():
+    sorted_list = sorted(transactions, key=lambda x: x["amount"], reverse=True)
+    print("\n--- Transactions Sorted by Amount ---")
+    for t in sorted_list:
+        print(f"{t['date']} | {t['type']} | ${t['amount']} | {t['category']}")
+
+# Show ASCII bar chart for monthly spending
+def monthly_spending_chart():
+    monthly_totals = {}
+    for t in transactions:
+        if t["type"] == "Expense":
+            month = t["date"][:7]  # YYYY-MM
+            monthly_totals[month] = monthly_totals.get(month, 0) + t["amount"]
+
+    print("\n--- Monthly Spending Chart ---")
+    for month, total in monthly_totals.items():
+        bars = "#" * int(total // 10)
+        print(f"{month}: {bars} (${total})")
+
+# Main menu
+def main():
+    load_data()
+    while True:
+        print("\n==== Personal Finance Tracker ====")
+        print("1. Add Transaction")
+        print("2. View All Transactions")
+        print("3. Filter Expenses over $100")
+        print("4. Search by Category")
+        print("5. Sort by Amount")
+        print("6. Show Monthly Spending Chart")
+        print("7. Exit")
+
+        choice = input("Choose an option: ")
+
+        if choice == "1":
+            add_transaction()
+        elif choice == "2":
+            view_transactions()
+        elif choice == "3":
+            filter_expenses_over_100()
+        elif choice == "4":
+            search_by_category()
+        elif choice == "5":
+            sort_by_amount()
+        elif choice == "6":
+            monthly_spending_chart()
+        elif choice == "7":
+            print("Exiting... Data saved.")
+            save_data()
+            break
+        else:
+            print("Invalid choice, try again.")
+
+if __name__ == "__main__":
+    main()
